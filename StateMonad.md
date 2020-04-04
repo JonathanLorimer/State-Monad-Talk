@@ -60,6 +60,7 @@ const prodServer = new ServerProxyFactoryService(AWS_IP_ADDR, AWS_HOST)
 ## Haskell translation
 
 ```haskell
+data Reader r a = Reader { unRead :: r -> a }
 ```
 
 # Mutation

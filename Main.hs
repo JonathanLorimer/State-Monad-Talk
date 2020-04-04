@@ -2,6 +2,14 @@ module Main where
 
 import Data.Map
 
-newtype ReadIt r a = ReadIt { unRead :: r -> a }
+-- Access
+newtype Read r a = Read { runRead :: r -> a }
+
+
+-- Mutation
+newtype Write w a = Write { runWrite :: (w, a) }
+
+-- State
+newtype State s a = State { runState :: s -> (a, s) }
 
 main = print "hello"
