@@ -57,6 +57,11 @@ const devServer = new ServerProxyFactoryService("localhost", 3008)
 const prodServer = new ServerProxyFactoryService(AWS_IP_ADDR, AWS_HOST)
 ```
 
+## Haskell translation
+
+```haskell
+```
+
 # Mutation
 
 ## Back to the wild west
