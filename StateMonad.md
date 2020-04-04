@@ -57,20 +57,25 @@ const devServer = new ServerProxyFactoryService("localhost", 3008)
 const prodServer = new ServerProxyFactoryService(AWS_IP_ADDR, AWS_HOST)
 ```
 
-## Back to the wild west
+# Mutation
 
+## Back to the wild west
 
 ```javascript
 // thermostats.js
 export function async getThermostat(thermostatId) {
-    const res = await fetch(`${this.host}:${this.port}/thermostats/${thermostatId}`)
+    const res = await fetch(
+      `${this.host}:${this.port}/thermostats/${thermostatId}`
+      )
     this.log = `${this.log}\n[${new Date()}] GET: /thermostats/${thermostatId}`
     return res
 }
 
 // buildings.js
 export function async getBuilding(buildingId) {
-    const res = await fetch(`${this.host}:${this.port}/buildings/${buildingId}`)
+    const res = await fetch(
+      `${this.host}:${this.port}/buildings/${buildingId}`
+      )
     this.log = `${this.log}\n[${new Date()}] GET: /buildings/${buildingId}`
     return res
 }
@@ -86,6 +91,30 @@ class ServerProxyFactoryService {
     this.log = ""
     this.getBuildings = getBuildings.bind(this)
     this.getThermostats = getThermsotats.bind(this)
+  }
+}
+```
+
+# Putting it all together
+
+## Memoization in JS
+
+```javascript
+class MemoFib {
+  #calls = {}
+  run(index) {
+    if (index === 0) return 0
+    if (index === 1) return 1
+
+    if (this.#calls[index]) {
+      return this.#calls[index]
+    } else {
+      const a = this.run(index - 1)
+      const b = this.run(index - 2)
+      this.#calls[index - 1] = a
+      this.#calls[index - 2] = b
+      return a + b
+    }
   }
 }
 ```
