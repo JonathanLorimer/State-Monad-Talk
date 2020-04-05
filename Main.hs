@@ -89,18 +89,81 @@ instance Monoid w => Monad (Write w) where
 
 type Log = String
 
-getThermostat' :: String -> (Log, IO (Response ByteString))
-getThermostat' tstatId =
+getThermostat' :: String -> Write Log (IO (Response ByteString))
+getThermostat' tstatId = Write $
   ( "GET /thermostats/" ++ tstatId ++ "\n"
   , get $ "host" ++ ":" ++ "port" ++ "/thermostats/" ++ tstatId )
 
-getBuilding' :: String -> (Log, IO (Response ByteString))
-getBuilding' buildingId =
+getBuilding' :: String -> Write Log (IO (Response ByteString))
+getBuilding' buildingId = Write $
   ( "GET /buildings/" ++ buildingId ++ "\n"
   , get $ "host" ++ ":" ++ "port" ++ "/buildings/" ++ buildingId )
 
+getThermostats' :: String -> Write Log (IO (Response ByteString))
+getThermostats' buildingId = pure buildingId
+  >>= getBuilding'
+  >>= getThermostat' . thermostatIdFromBuilding
 
 -- State
 newtype State s a = State { runState :: s -> (a, s) }
+
+instance Functor (State s) where
+  fmap f (State a) = State $ \s -> let (a', s') = a s
+                                    in (f a', s')
+
+instance Applicative (State s) where
+  pure a = State $ \s -> (a, s)
+  State f <*> State a = State $ \s -> let (f', s') = f s
+                                          (a', s'') = a s'
+                                       in (f' a', s'')
+
+instance Monad (State s) where
+  return = pure
+  State a >>= f = State $ \s -> let (a', s') = a s
+                                in runState (f a') s'
+
+data AppState = AppState { stateHost :: String
+                         , statePort :: String
+                         , log :: String }
+
+getState :: State s s
+getState = State $ \s -> (s,s)
+
+put :: state -> State state ()
+put newState = State $ \_ -> ((), newState)
+
+getThermostat'' :: String -> State AppState (IO (Response ByteString))
+getThermostat'' tstatId = do
+  AppState {..} <- getState
+  let log = log ++ "GET /thermostats/" ++ tstatId ++ "\n"
+  put $ AppState {..}
+  return $ get $ "host" ++ ":" ++ "port" ++ "/thermostats/" ++ tstatId
+
+getBuilding'' :: String -> State AppState (IO (Response ByteString))
+getBuilding'' buildingId = do
+  AppState {..} <- getState
+  let log = log ++ "GET /buildings/" ++ buildingId ++ "\n"
+  put $ AppState {..}
+  return $ get $ "host" ++ ":" ++ "port" ++ "/buildings/" ++ buildingId
+
+getThermostats'' :: String -> State AppState (IO (Response ByteString))
+getThermostats'' buildingId = pure buildingId
+  >>= getBuilding''
+  >>= getThermostat'' . thermostatIdFromBuilding
+
+devState = AppState { stateHost = "localhost"
+                    , statePort = "3008"
+                    , log = "" }
+
+prodState = AppState { stateHost = "AWS_IP"
+                     , statePort = "80"
+                     , log = "" }
+
+runGetThermostats' :: AppState -> String -> IO (Response ByteString)
+runGetThermostats' state buildingId = do
+  let (value, AppState{..} ) = runState (getThermostats'' buildingId) state
+  print log
+  value
+
 
 main = print "hello"
