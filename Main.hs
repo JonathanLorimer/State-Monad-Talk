@@ -90,10 +90,15 @@ instance Monoid w => Monad (Write w) where
 type Log = String
 
 getThermostat' :: String -> (Log, IO (Response ByteString))
-getThermostat' tstatId = undefined
+getThermostat' tstatId =
+  ( "GET /thermostats/" ++ tstatId ++ "\n"
+  , get $ "host" ++ ":" ++ "port" ++ "/thermostats/" ++ tstatId )
 
 getBuilding' :: String -> (Log, IO (Response ByteString))
-getBuilding' buildingId = undefined
+getBuilding' buildingId =
+  ( "GET /buildings/" ++ buildingId ++ "\n"
+  , get $ "host" ++ ":" ++ "port" ++ "/buildings/" ++ buildingId )
+
 
 -- State
 newtype State s a = State { runState :: s -> (a, s) }
