@@ -60,7 +60,35 @@ const prodServer = new ServerProxyFactoryService(AWS_IP_ADDR, AWS_HOST)
 ## Haskell translation
 
 ```haskell
-data Reader r a = Reader { unRead :: r -> a }
+getThermostat :: String -> IO (Response ByteString)
+getThermostat tstatId =
+  get $ this.host ++ ":" ++ this.port "/thermostats/" ++ tstatId
+
+getBuilding :: String -> IO (Response ByteString)
+getBuilding buildingId =
+  get $ this.host ++ ":" ++ this.port "/buildings/" ++ buildingId
+```
+
+- We need to get a hold of host and port
+
+## A naive solution
+```haskell
+getThermostat :: String -> String -> String -> IO (Response ByteString)
+getThermostat host port tstatId =
+  get $ host ++ ":" ++ port "/thermostats/" ++ tstatId
+
+getBuilding :: String -> String -> String -> IO (Response ByteString)
+getBuilding host port buildingId =
+  get $ host ++ ":" ++ port "/buildings/" ++ buildingId
+```
+- However, this doesn't compose very well
+```haskell
+thermostatIdFromBuilding :: IO (Response ByteString) -> String
+
+getThermostats :: String -> String -> String -> IO (Response ByteString)
+getThermostats host port buildingId =
+  getThermostat host port . thermostatIdFromBuilding
+  $ getBuilding host port buildingId
 ```
 
 # Mutation
