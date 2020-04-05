@@ -48,12 +48,52 @@ getThermostat tstatId = do
   (Env {..}) <- ask
   return (get $ host ++ ":" ++ port ++ "/thermostats/" ++ tstatId)
 
-getBuildings :: String -> Environment (IO (Response ByteString))
-getBuildings buildingId = Read $ \Env {..} ->
+getBuilding :: String -> Environment (IO (Response ByteString))
+getBuilding buildingId = Read $ \Env {..} ->
   get $ host ++ ":" ++ port ++ "/buildings/" ++ buildingId
+
+thermostatIdFromBuilding :: IO (Response ByteString) -> String
+thermostatIdFromBuilding = undefined
+
+devEnv = Env { host = "localhost"
+             , port = "3008" }
+
+prodEnv = Env { host = "AWS_IP_ADDRESS"
+              , port = "80" }
+
+getThermostats :: String -> Environment (IO (Response ByteString))
+getThermostats buildingId = pure buildingId
+  >>= getBuilding
+  >>= getThermostat . thermostatIdFromBuilding
+
+runGetThermostats :: String -> Env -> IO (Response ByteString)
+runGetThermostats s e = runRead (getThermostats s) e
+
+getDevTstats = runGetThermostats "1234" devEnv
+getProdTstats = runGetThermostats "1234" prodEnv
 
 -- Mutation
 newtype Write w a = Write { runWrite :: (w, a) }
+
+instance Functor (Write w) where
+  fmap f = Write . fmap f . runWrite
+
+instance Monoid w => Applicative (Write w) where
+  pure a = Write $ (mempty, a)
+  Write (w, f) <*> Write (w', a) = Write $ (w <> w', f a)
+
+instance Monoid w => Monad (Write w) where
+  return = pure
+  Write (w, a) >>= f = let (w', b) = runWrite $ f a
+                        in Write (w <> w', b)
+
+type Log = String
+
+getThermostat' :: String -> (Log, IO (Response ByteString))
+getThermostat' tstatId = undefined
+
+getBuilding' :: String -> (Log, IO (Response ByteString))
+getBuilding' buildingId = undefined
 
 -- State
 newtype State s a = State { runState :: s -> (a, s) }
