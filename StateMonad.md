@@ -72,6 +72,7 @@ getBuilding buildingId =
 - We need to get a hold of host and port
 
 ## A naive solution
+
 ```haskell
 getThermostat :: String -> String -> String -> IO (Response ByteString)
 getThermostat host port tstatId =
@@ -82,6 +83,7 @@ getBuilding host port buildingId =
   get $ host ++ ":" ++ port "/buildings/" ++ buildingId
 ```
 - However, this doesn't compose very well
+
 ```haskell
 thermostatIdFromBuilding :: IO (Response ByteString) -> String
 
@@ -90,6 +92,14 @@ getThermostats host port buildingId =
   getThermostat host port . thermostatIdFromBuilding
   $ getBuilding host port buildingId
 ```
+- We have to thread this data through our entire application
+
+## A more robust solution
+
+```haskell
+newtype Reader r a = Reader { runReader :: r -> a }
+```
+- Let's write the instances
 
 # Mutation
 
