@@ -92,9 +92,9 @@ getThermostats host port buildingId =
   getThermostat host port . thermostatIdFromBuilding
   $ getBuilding host port buildingId
 ```
-- We have to thread this data through our entire application
+- Problem: We have to thread this data through our entire application
 
-## A more robust solution
+## A more robust solution - Reader
 
 ```haskell
 newtype Reader r a = Reader { runReader :: r -> a }
@@ -139,9 +139,28 @@ class ServerProxyFactoryService {
 }
 ```
 
+## How can we maintain purity with 'Mutability'
+
+- For each function we return the `value` and the `mutation` as a single value
+```haskell
+functionWithState :: a -> (w, b)
+
+newtype Writer w a = Writer { runWriter :: (w, a) }
+```
+
+- Let's write some instances
+
 # Putting it all together
 
-## Memoization in JS
+## Accessing and Mutating
+```haskell
+newtype State s a = State { runState :: s -> (a, s) }
+```
+- Takes an initial state
+- Returns a value and the new state
+- More instances!
+
+## Memoization in JS - A Final Example
 
 ```javascript
 class MemoFib {
@@ -162,3 +181,5 @@ class MemoFib {
   }
 }
 ```
+
+- Let's try and implement this in haskell
