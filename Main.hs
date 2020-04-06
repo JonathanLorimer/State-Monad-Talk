@@ -165,5 +165,22 @@ runGetThermostats' state buildingId = do
   print log
   value
 
+-- Memoization Example
+type Memo = Map Int Int
+
+memoFib :: Int -> State Memo Int
+memoFib 0 = return 0
+memoFib 1 = return 1
+memoFib n = do
+  memo <- getState
+  case M.lookup n memo of
+    Just x -> return x
+    Nothing -> do
+      a <- memoFib (n - 1)
+      b <- memoFib (n - 2)
+      let m = M.insert (n - 1) a m
+      let m' = M.insert (n - 2) b m
+      put m'
+      return $ a - b
 
 main = print "hello"

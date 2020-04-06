@@ -3,30 +3,33 @@
 
 module Reader where
 
-newtype Read r a = Read { runRead :: r -> a }
+import Network.Wreq (get, Response)
+import Data.ByteString.Lazy (ByteString)
 
-instance Functor (Read r) where
-  fmap :: (a -> b) -> Read r a -> Read r b
+newtype Reader r a = Reader { runReader :: r -> a }
+
+instance Functor (Reader r) where
+  fmap :: (a -> b) -> Reader r a -> Reader r b
   fmap f a = undefined
 
-instance Applicative (Read r) where
-  pure :: a -> Read r a
+instance Applicative (Reader r) where
+  pure :: a -> Reader r a
   pure a = undefined
-  (<*>) :: Read r (a -> b) -> Read r a -> Read r b
-  Read f <*> Read a = undefined
+  (<*>) :: Reader r (a -> b) -> Reader r a -> Reader r b
+  Reader f <*> Reader a = undefined
 
-instance Monad (Read r) where
+instance Monad (Reader r) where
   return = pure
-  (>>=) :: Read r a -> (a -> Read r b) -> Read r b
-  Read a >>= f = undefined
+  (>>=) :: Reader r a -> (a -> Reader r b) -> Reader r b
+  Reader a >>= f = undefined
 
 data Env = Env { host :: String
                , port :: String }
 
-type Environment = Read Env
+type Environment = Reader Env
 
-ask :: Read a a
-ask = Read id
+ask :: Reader a a
+ask = Reader id
 
 
 getThermostat :: String -> Environment (IO (Response ByteString))
@@ -59,7 +62,7 @@ type B = IO (Response ByteString)
 --   >>= getThermostat . thermostatIdFromBuilding
 
 -- runGetThermostats :: String -> Env -> IO (Response ByteString)
--- runGetThermostats s e = runRead (getThermostats s) e
+-- runGetThermostats s e = runReader (getThermostats s) e
 
 -- getDevTstats = runGetThermostats "1234" devEnv
 -- getProdTstats = runGetThermostats "1234" prodEnv

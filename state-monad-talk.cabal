@@ -24,7 +24,6 @@ library
       Memo
   hs-source-dirs:
       src
-  ghc-options: -Wall
   build-depends:       base >=4.13 && <4.14, containers, wreq, bytestring
   default-language: Haskell2010
 
