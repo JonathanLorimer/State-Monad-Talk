@@ -5,7 +5,8 @@
 
 module Main where
 
-import Data.Map
+import Data.Map (Map)
+import qualified Data.Map as M
 import Network.Wreq (get, Response)
 import Data.ByteString.Lazy (ByteString)
 import Prelude hiding (Read)
