@@ -11,20 +11,21 @@ newtype Writer w a = Writer { runWriter :: (w, a) }
 instance Functor (Writer w) where
   fmap f = undefined
 
-instance Monoid w => Applicative (Writer w) where
-  pure a = Writer $ (mempty, a)
+instance Applicative (Writer w) where
+  pure a = undefined
+
   (<*>) :: Writer w (a -> b) -> Writer w a -> Writer w b
   Writer (w, f) <*> Writer (w', a) = undefined
 
-instance Monoid w => Monad (Writer w) where
+instance Monad (Writer w) where
   return = pure
+
   (>>=) :: Writer w a -> (a -> Writer w b) -> Writer w b
-  Writer (w, a) >>= f = let (w', b) = runWriter $ f a
-                        in Writer (w <> w', b)
+  Writer (w, a) >>= f = undefined
 
 type Log = String
 
-makeLog :: String -> String
+makeLog :: String -> Log
 makeLog endpoint = "GET " ++ endpoint ++ "\n"
 
 getThermostat' :: String -> Writer Log (IO (Response ByteString))

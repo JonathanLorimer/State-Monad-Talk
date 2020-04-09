@@ -179,9 +179,11 @@ memoFib n = do
     Nothing -> do
       a <- memoFib (n - 1)
       b <- memoFib (n - 2)
-      let m = M.insert (n - 1) a m
-      let m' = M.insert (n - 2) b m
-      put m'
+      m <- getState
+      let res = a - b
+      put $ M.insert n res m
       return $ a - b
+
+-- $> runState (memoFib 50) M.empty
 
 main = print "hello"

@@ -98,6 +98,12 @@ getThermostats host port buildingId =
 
 ```haskell
 newtype Reader r a = Reader { runReader :: r -> a }
+type Env = (String, String)
+
+getThermostat'  :: String -> Env -> IO (Response ByteString)
+-- Reader Env (IO (Response ByteString)) =
+--    Reader { runReader :: Env -> IO (Response ByteString) }
+getThermostat'' :: String -> Reader Env (IO (Response ByteString))
 ```
 - Let's write the instances
 
